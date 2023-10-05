@@ -134,15 +134,15 @@ void fuel_destructor(Fuel* fuel);
 Fuel* fuel_new(void);
 void fuel_delete(Fuel* fuel);
 void set_fuel_capacity(Fuel* fuel, bool capacity);
-bool get_fuel_capacity(Fuel fuel);
+bool get_fuel_capacity(Fuel* fuel);
 void input_fuel(Fuel* fuel);
-void output_fuel(Fuel fuel);
+void output_fuel(Fuel* fuel);
 void fill_fuel(Fuel* fuel);
 void empty_fuel(Fuel* fuel);
 
 void fuel_constructor(Fuel* fuel) {
 	fuel->_private = (FuelPrivate*)malloc(sizeof(FuelPrivate));
-	fuel->_private->capacity = 1;
+	fuel->_private->capacity = 0;
 }
 
 void fuel_destructor(Fuel* fuel) {
@@ -164,13 +164,13 @@ void set_fuel_capacity(Fuel* fuel, bool capacity) {
 	fuel->_private->capacity = capacity;
 }
 
-bool get_fuel_capacity(Fuel fuel) {
-	return fuel._private->capacity;
+bool get_fuel_capacity(Fuel* fuel) {
+	return fuel->_private->capacity;
 }
 
 void input_fuel(Fuel* fuel) {
 	int temp = 1;
-	printf("** Ввод данных о топливном баке**\n");
+	printf("** Ввод данных о топливном баке **\n");
 	do {
 		printf("Введите заполенность бака (0 - Пустой, 1 - Полный): ");
 		while (scanf("%d", &temp) != 1) {
@@ -182,9 +182,9 @@ void input_fuel(Fuel* fuel) {
 	printf("Данные успешно введены!\n\n");
 }
 
-void output_fuel(Fuel fuel) {
+void output_fuel(Fuel* fuel) {
 	printf("Данные о топливном баке:\n-Заполненность: ");
-	if (fuel._private->capacity)
+	if (fuel->_private->capacity)
 		printf("Полный\n\n");
 	else
 		printf("Пустой\n\n");
@@ -203,14 +203,15 @@ void empty_fuel(Fuel* fuel) {
 void car_constructor(Car* car);
 void car_destructor(Car* car);
 Car* car_new(void);
+void car_delete(Car* car);
 void set_car_brand(Car* car, char* brand);
 void set_car_rate(Car* car, bool rate);
-const char* get_car_brand(Car car);
-bool get_car_rate(Car car);
+const char* get_car_brand(Car* car);
+bool get_car_rate(Car* car);
 void input_car_brand(Car* car);
 void input_car_rate(Car* car);
 void input_car(Car* car);
-void output_car(Car car);
+void output_car(Car* car);
 
 void car_constructor(Car* car) {
 	fuel_constructor(&car->parent);
@@ -230,6 +231,11 @@ Car* car_new(void) {
 	return car;
 }
 
+void car_delete(Car* car) {
+	car_destructor(car);
+	free(car);
+}
+
 void set_car_brand(Car* car, char* brand) {
 	strcpy(car->_private->brand, brand);
 }
@@ -238,17 +244,18 @@ void set_car_rate(Car* car, bool rate) {
 	car->_private->rate = rate;
 }
 
-const char* get_car_brand(Car car) {
-	return car._private->brand;
+const char* get_car_brand(Car* car) {
+	return car->_private->brand;
 }
 
-bool get_car_rate(Car car) {
-	return car._private->rate;
+bool get_car_rate(Car* car) {
+	return car->_private->rate;
 }
 
 void input_car_brand(Car* car) {
 	char temp[20];
 	printf("** Ввод марки автомобиля **\n");
+	while (getchar() != '\n');
 	do {
 		printf("Введите марку: ");
 		gets_s(temp);
@@ -290,12 +297,12 @@ void input_car(Car* car) {
 	printf("Данные успешно введены!\n\n");
 }
 
-void output_car(Car car) {
-	if (car._private->brand[0] == NULL)
+void output_car(Car* car) {
+	if (car->_private->brand[0] == NULL)
 		printf("Данные об автомобиле отсутствуют!");
 	else {
-		printf("Данные об автомобиле:\n-Марка: %s\n-Класс: ", car._private->brand);
-		if (car._private->rate)
+		printf("Данные об автомобиле:\n-Марка: %s\n-Класс: ", car->_private->brand);
+		if (car->_private->rate)
 			printf("Комфорт\n");
 		else
 			printf("Эконом\n");
@@ -309,6 +316,39 @@ int main() {
 	setlocale(LC_ALL, "Russian");
 	SetConsoleCP(1251);
 	SetConsoleOutputCP(1251);
-	_getch();
+
+	printf("ТЕСТЫ:\n");
+	printf("---------------------- Топливный бак -----------------------\n\n");
+	Fuel* fuel = fuel_new();
+	set_fuel_capacity(fuel, 1);
+	printf("--- Тест set_fuel_capacity (установлено значение 1) и get_fuel_capacity: заполненность = %d\n", get_fuel_capacity(fuel));
+	printf("--- Тест input_fuel (ввести данные о топливном баке):\n");
+	input_fuel(fuel);
+	printf("--- Тест output_fuel (вывести данные о топливном баке):\n");
+	output_fuel(fuel);
+	empty_fuel(fuel);
+	printf("--- Тест empty_fuel (опустошить бак): заполненность = %d\n", get_fuel_capacity(fuel));
+	fill_fuel(fuel);
+	printf("--- Тест fill_fuel (заполнить бак): заполненность = %d\n", get_fuel_capacity(fuel));
+	fuel_delete(fuel);
+
+	printf("\n---------------------- Автомобиль --------------------------\n\n");
+	Car* car = car_new();
+	char brand[20];
+	strcpy(brand, "Volvo");
+	set_car_brand(car, brand);
+	printf("--- Тест set_car_brand (установлено значение \"Volvo\") и get_car_brand: марка - %s\n", get_car_brand(car));
+	set_car_rate(car, 1);
+	printf("--- Тест set_car_rate (установлено значение 1 - Комфорт) и get_car_rate: класс автомобиля - %d\n", get_car_rate(car));
+	printf("--- Тест input_car_brand (ввести марку):\n");
+	input_car_brand(car);
+	printf("--- Тест input_car_rate (ввести класс автомобиля):\n");
+	input_car_rate(car);
+	printf("--- Тест output_car (вывести данные об автомобиле):\n");
+	output_car(car);
+	fill_fuel((Fuel*)car);
+	printf("--- Тест fill_fuel (заполнить бак, через дочерний объект Car): заполненность = %d\n", get_fuel_capacity((Fuel*)car));
+	car_delete(car);
+
 	return 0;
 }
