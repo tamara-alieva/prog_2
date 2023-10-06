@@ -5,6 +5,11 @@
 #include <string.h>
 #include <Windows.h>
 
+typedef struct _Person {
+	char name[20];
+	int balance;
+} Person;
+
 typedef struct _Passenger {
 	char name[20];
 	int balance;
@@ -319,36 +324,39 @@ int main() {
 
 	printf("ТЕСТЫ:\n");
 	printf("---------------------- Топливный бак -----------------------\n\n");
-	Fuel* fuel = fuel_new();
-	set_fuel_capacity(fuel, 1);
-	printf("--- Тест set_fuel_capacity (установлено значение 1) и get_fuel_capacity: заполненность = %d\n", get_fuel_capacity(fuel));
+	Fuel* fuel_dynamic = fuel_new();
+	Fuel fuel_static = *fuel_dynamic;
+	set_fuel_capacity(fuel_dynamic, 1);
+	printf("--- Тест set_fuel_capacity (установлено значение 1) и get_fuel_capacity: заполненность = %d\n", get_fuel_capacity(fuel_dynamic));
 	printf("--- Тест input_fuel (ввести данные о топливном баке):\n");
-	input_fuel(fuel);
+	input_fuel(fuel_dynamic);
 	printf("--- Тест output_fuel (вывести данные о топливном баке):\n");
-	output_fuel(fuel);
-	empty_fuel(fuel);
-	printf("--- Тест empty_fuel (опустошить бак): заполненность = %d\n", get_fuel_capacity(fuel));
-	fill_fuel(fuel);
-	printf("--- Тест fill_fuel (заполнить бак): заполненность = %d\n", get_fuel_capacity(fuel));
-	fuel_delete(fuel);
+	output_fuel(fuel_dynamic);
+	empty_fuel(&fuel_static);
+	printf("--- Тест empty_fuel (опустошить бак): заполненность = %d\n", get_fuel_capacity(&fuel_static));
+	fill_fuel(fuel_dynamic);
+	printf("--- Тест fill_fuel (заполнить бак): заполненность = %d\n", get_fuel_capacity(fuel_dynamic));
+	fuel_delete(fuel_dynamic);
 
 	printf("\n---------------------- Автомобиль --------------------------\n\n");
-	Car* car = car_new();
+	Car car_static;
+	Car* car_dynamic = car_new();
+	car_static = *car_dynamic;
 	char brand[20];
 	strcpy(brand, "Volvo");
-	set_car_brand(car, brand);
-	printf("--- Тест set_car_brand (установлено значение \"Volvo\") и get_car_brand: марка - %s\n", get_car_brand(car));
-	set_car_rate(car, 1);
-	printf("--- Тест set_car_rate (установлено значение 1 - Комфорт) и get_car_rate: класс автомобиля - %d\n", get_car_rate(car));
+	set_car_brand(car_dynamic, brand);
+	printf("--- Тест set_car_brand (установлено значение \"Volvo\") и get_car_brand: марка - %s\n", get_car_brand(car_dynamic));
+	set_car_rate(car_dynamic, 1);
+	printf("--- Тест set_car_rate (установлено значение 1 - Комфорт) и get_car_rate: класс автомобиля - %d\n", get_car_rate(car_dynamic));
 	printf("--- Тест input_car_brand (ввести марку):\n");
-	input_car_brand(car);
+	input_car_brand(car_dynamic);
 	printf("--- Тест input_car_rate (ввести класс автомобиля):\n");
-	input_car_rate(car);
+	input_car_rate(car_dynamic);
 	printf("--- Тест output_car (вывести данные об автомобиле):\n");
-	output_car(car);
-	fill_fuel((Fuel*)car);
-	printf("--- Тест fill_fuel (заполнить бак, через дочерний объект Car): заполненность = %d\n", get_fuel_capacity((Fuel*)car));
-	car_delete(car);
+	output_car(&car_static);
+	fill_fuel((Fuel*)car_dynamic);
+	printf("--- Тест fill_fuel (заполнить бак, через дочерний объект Car): заполненность = %d\n", get_fuel_capacity((Fuel*)car_dynamic));
+	car_delete(car_dynamic);
 
 	return 0;
 }
