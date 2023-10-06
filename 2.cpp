@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <conio.h>
 #include <string.h>
-#include <stddef.h>
 #include <Windows.h>
 
 typedef struct _PersonPrivate {
@@ -24,6 +23,15 @@ typedef struct _Passenger {
 	PassengerPrivate* _private;
 } Passenger;
 
+typedef struct _Driver {
+	int experience, orderAmount;
+} DriverPrivate;
+
+typedef struct _Driver {
+	Person person;
+	DriverPrivate* _private;
+} Driver;
+
 typedef struct _FuelPrivate {
 	bool capacity;
 } FuelPrivate;
@@ -41,16 +49,6 @@ typedef struct _Car {
 	Fuel parent;
 	CarPrivate* _private;
 } Car;
-
-typedef struct _Driver {
-	int experience, orderAmount;
-} DriverPrivate;
-
-typedef struct _Driver {
-	Person person;
-	Car car;
-	DriverPrivate* _private;
-} Driver;
 
 typedef struct _Order {
 	bool rate, congestion;
@@ -137,6 +135,15 @@ void output_person(Person* person) {
 
 /* -------------------------------- Пассажир ------------------------------------ */
 
+void passenger_constructor(Passenger* passenger, Person* person);
+void passenger_destructor(Passenger* passenger);
+Passenger* passenger_new(Person* person);
+void passenger_delete(Passenger* passenger);
+void set_passenger_method(Passenger* passenger, bool method);
+bool get_passenger_method(Passenger* passenger);
+void input_passenger(Passenger* passenger);
+void output_passenger(Passenger* passenger);
+
 void passenger_constructor(Passenger* passenger, Person* person) {
 	person_constructor(person);
 	passenger->_private = (PassengerPrivate*)malloc(sizeof(PassengerPrivate));
@@ -168,7 +175,7 @@ bool get_passenger_method(Passenger* passenger) {
 
 void input_passenger(Passenger* passenger) {
 	int temp = 1;
-	printf("** Ввод данных о пассажире **\n");
+	printf("** Ввод данных о пассажире %s **\n", get_person_name((Person*)passenger));
 	do {
 		printf("Введите способ оплаты (0 - Наличные, 1 - Банковская карта): ");
 		while (scanf("%d", &temp) != 1) {
@@ -181,11 +188,92 @@ void input_passenger(Passenger* passenger) {
 }
 
 void output_passenger(Passenger* passenger) {
-	printf("Данные о пассажире:\n-Способ оплаты: ");
+	printf("Данные о пассажире:\n-Имя: %s\n", get_person_name((Person*)passenger));
+	printf("-Баланс: %d\n-Способ оплаты: ", get_person_balance((Person*)passenger));
 	if (passenger->_private->payment_method)
-		printf("Банксовская карта\n\n");
+		printf("Банковская карта\n\n");
 	else
 		printf("Наличные\n\n");
+}
+
+/* -------------------------------- Водитель ------------------------------------ */
+
+void driver_constructor(Driver* driver, Person* person);
+void driver_destructor(Driver* driver);
+Driver* driver_new(Person* person);
+void driver_delete(Driver* driver);
+void set_driver_experience(Driver* driver, int experience);
+void set_driver_order_amount(Driver* driver, int amount);
+int get_driver_experience(Driver* driver);
+int get_driver_order_amount(Driver* driver);
+void input_driver(Driver* driver);
+void output_driver(Driver* driver);
+
+void driver_constructor(Driver* driver, Person* person) {
+	person_constructor(person);
+	driver->_private = (DriverPrivate*)malloc(sizeof(DriverPrivate));
+	driver->_private->experience = 0;
+	driver->_private->orderAmount = 0;
+}
+
+void driver_destructor(Driver* driver) {
+	free(driver->_private);
+}
+
+Driver* driver_new(Person* person) {
+	Driver* driver = (Driver*)malloc(sizeof(Driver));
+	driver_constructor(driver, person);
+	return driver;
+}
+
+void driver_delete(Driver* driver) {
+	driver_destructor(driver);
+	free(driver);
+}
+
+void set_driver_experience(Driver* driver, int experience) {
+	driver->_private->experience = experience;
+}
+
+void set_driver_order_amount(Driver* driver, int amount) {
+	driver->_private->orderAmount = amount;
+}
+
+int get_driver_experience(Driver* driver) {
+	return driver->_private->experience;
+}
+
+int get_driver_order_amount(Driver* driver) {
+	return driver->_private->orderAmount;
+}
+
+void input_driver(Driver* driver) {
+	int temp = 1;
+	printf("** Ввод данных о водителе %s **\n", get_person_name((Person*)driver));
+	do {
+		printf("Введите количество лет опыта: ");
+		while (scanf("%d", &temp) != 1) {
+			while (getchar() != '\n');
+			printf("Ошибка. Введите количество лет опыта: ");
+		}
+	} while (temp < 0);
+	driver->_private->experience = temp;
+	do {
+		printf("Введите количество выполненных заказов: ");
+		while (scanf("%d", &temp) != 1) {
+			while (getchar() != '\n');
+			printf("Ошибка. Введите количество выполненных заказов: ");
+		}
+	} while (temp < 0);
+	driver->_private->orderAmount = temp;
+	printf("Данные успешно введены!\n\n");
+}
+
+void output_driver(Driver* driver) {
+	printf("Данные о пассажире:\n-Имя: %s\n", get_person_name((Person*)driver));
+	printf("-Баланс: %d\n", get_person_balance((Person*)driver));
+	printf("-Количество лет опыта: %d\n", driver->_private->experience);
+	printf("-Количество выполненных заказов: %d\n", driver->_private->orderAmount);
 }
 
 /* -------------------------------- Топливный бак ------------------------------------ */
@@ -370,7 +458,6 @@ void output_car(Car* car) {
 	}
 }
 
-/* -------------------------------- Водитель ------------------------------------ */
 /* -------------------------------- Заказ ------------------------------------ */
 
 int main() {
