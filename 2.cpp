@@ -50,13 +50,6 @@ typedef struct _Car {
 	CarPrivate* _private;
 } Car;
 
-typedef struct _Order {
-	bool rate, congestion;
-	Driver driver;
-	Passenger passenger;
-	int payment;
-} Order;
-
 /* -------------------------------- Человек ------------------------------------ */
 
 void person_constructor(Person* person);
@@ -128,7 +121,7 @@ void input_person(Person* person) {
 
 void output_person(Person* person) {
 	if (person->_private->name[0] == NULL)
-		printf("Данные о человеке отсутствуют!");
+		printf("Данные о человеке отсутствуют!\n");
 	else
 		printf("Данные о человеке:\n-Имя: %s\n-Баланс: %d\n", person->_private->name, person->_private->balance);
 }
@@ -143,6 +136,7 @@ void set_passenger_method(Passenger* passenger, bool method);
 bool get_passenger_method(Passenger* passenger);
 void input_passenger(Passenger* passenger);
 void output_passenger(Passenger* passenger);
+void take_payment(Passenger* passenger, int payment);
 
 void passenger_constructor(Passenger* passenger, Person* person) {
 	person_constructor(person);
@@ -196,6 +190,11 @@ void output_passenger(Passenger* passenger) {
 		printf("Наличные\n\n");
 }
 
+void take_payment(Passenger* passenger, int payment) {
+	int old_balance = get_person_balance((Person*)passenger);
+	set_person_balance((Person*)passenger, old_balance - payment);
+}
+
 /* -------------------------------- Водитель ------------------------------------ */
 
 void driver_constructor(Driver* driver, Person* person);
@@ -208,6 +207,7 @@ int get_driver_experience(Driver* driver);
 int get_driver_order_amount(Driver* driver);
 void input_driver(Driver* driver);
 void output_driver(Driver* driver);
+void give_payment(Driver* driver, int payment);
 
 void driver_constructor(Driver* driver, Person* person) {
 	person_constructor(person);
@@ -274,6 +274,16 @@ void output_driver(Driver* driver) {
 	printf("-Баланс: %d\n", get_person_balance((Person*)driver));
 	printf("-Количество лет опыта: %d\n", driver->_private->experience);
 	printf("-Количество выполненных заказов: %d\n", driver->_private->orderAmount);
+}
+
+void give_payment(Driver* driver, int payment) {
+	int old_balance = get_person_balance((Person*)driver);
+	set_person_balance((Person*)driver, old_balance + payment);
+}
+
+void increase_order_amount(Driver* driver) {
+	int old_amount = get_driver_order_amount(driver);
+	set_driver_order_amount(driver, old_amount + 1);
 }
 
 /* -------------------------------- Топливный бак ------------------------------------ */
@@ -448,7 +458,7 @@ void input_car(Car* car) {
 
 void output_car(Car* car) {
 	if (car->_private->brand[0] == NULL)
-		printf("Данные об автомобиле отсутствуют!");
+		printf("Данные об автомобиле отсутствуют!\n");
 	else {
 		printf("Данные об автомобиле:\n-Марка: %s\n-Класс: ", car->_private->brand);
 		if (car->_private->rate)
@@ -458,7 +468,61 @@ void output_car(Car* car) {
 	}
 }
 
-/* -------------------------------- Заказ ------------------------------------ */
+/* -------------------------------- Функция заказа ------------------------------------ */
+
+void order(bool rate, bool congestion, Passenger* passenger, Driver* driver, Car* car);
+
+void order(bool rate, bool congestion, Passenger* passenger, Driver* driver, Car* car) {
+	printf("\n\nЗАКАЗ\n");
+	int payment;
+	int status = 0;
+	if (rate) payment = 500; // Класс поездки - Комфорт
+	else payment = 200; // Класс поездки - Эконом
+
+	if (congestion) payment *= 2; // Если дороги загруженны
+
+	if (get_person_balance((Person*)passenger) < payment)
+		printf("На балансе пассажира недостаточно средств! (Сумма поездки: %d)\n", payment);
+	else {
+		if (get_fuel_capacity((Fuel*)car) == 0)
+			printf("У выбранной машины не заполнен топливный бак!\n");
+		else {
+			if (rate) { // Класс поездки - Комфорт
+				if ((int)get_driver_experience < 10 || (int)get_driver_order_amount < 30)
+					printf("У выбранного водителя недостаточно лет опыта или выполненных заказов для выполнения заказа уровня Комфорт!\n");
+				else {
+					if (get_car_rate == 0)
+						printf("Выбранный автомобиль недостаточно высокого класса для выполнения заказа уровня Комфорт!\n");
+					else
+						status = 1;
+				}
+			}
+			else  // Класс поездки - Эконом
+				status = 1;
+		}
+	}
+
+	if (status) {
+		take_payment(passenger, payment);
+		give_payment(driver, payment);
+		increase_order_amount(driver);
+		empty_fuel((Fuel*)car);
+
+		printf("Заказ выполнен успешно! Информация на момент завершения заказа:\n\nКласс поездки: ");
+		if (rate) printf("Комфорт\n");
+		else printf("Эконом\n");
+
+		printf("Загруженность дорог: ");
+		if (congestion) printf("Есть\n");
+		else printf("Нет\n");
+
+		output_passenger(passenger);
+		output_driver(driver);
+		output_car(car);
+
+		printf("\n\n");
+	}
+}
 
 int main() {
 	setlocale(LC_ALL, "Russian");
