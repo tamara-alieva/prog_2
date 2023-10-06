@@ -1,18 +1,27 @@
 ﻿#define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
-#include "stdlib.h"
+#include <stdlib.h>
 #include <conio.h>
 #include <string.h>
+#include <stddef.h>
 #include <Windows.h>
 
-typedef struct _Person {
+typedef struct _PersonPrivate {
 	char name[20];
 	int balance;
+} PersonPrivate;
+
+typedef struct _Person {
+	PersonPrivate* _private;
 } Person;
 
+typedef struct _PassengerPrivate {
+	bool payment_method;
+} PassengerPrivate;
+
 typedef struct _Passenger {
-	char name[20];
-	int balance;
+	Person person;
+	PassengerPrivate* _private;
 } Passenger;
 
 typedef struct _FuelPrivate {
@@ -34,9 +43,13 @@ typedef struct _Car {
 } Car;
 
 typedef struct _Driver {
-	char name[20];
+	int experience, orderAmount;
+} DriverPrivate;
+
+typedef struct _Driver {
+	Person person;
 	Car car;
-	int experience, orderAmount, balance;
+	DriverPrivate* _private;
 } Driver;
 
 typedef struct _Order {
@@ -46,74 +59,64 @@ typedef struct _Order {
 	int payment;
 } Order;
 
-/* -------------------------------- Пассажир ------------------------------------ */
+/* -------------------------------- Человек ------------------------------------ */
 
-Passenger passenger_new(void);
-void set_passenger_name(Passenger* person, char* name);
-void set_passenger_balance(Passenger* person, int balance);
-const char* get_passenger_name(Passenger person);
-int get_passenger_balance(Passenger person);
-void input_passenger_name(Passenger* person);
-void input_passenger_balance(Passenger* person);
-void input_passenger(Passenger* person);
-void output_passenger(Passenger person);
+void person_constructor(Person* person);
+void person_destructor(Person* person);
+Person* person_new(void);
+void person_delete(Person* person);
+void set_person_name(Person* person, char* name);
+const char* get_person_name(Person* person);
+void set_person_balance(Person* person, int balance);
+int get_person_balance(Person* person);
+void input_person(Person* person);
+void output_person(Person* person);
 
-Passenger passenger_new(void) {
-	Passenger passenger;
-	strcpy(passenger.name, "");
-	passenger.balance = 0;
-	return passenger;
+void person_constructor(Person* person) {
+	person->_private = (PersonPrivate*)malloc(sizeof(PersonPrivate));
+	strcpy(person->_private->name, "");
+	person->_private->balance = 0;
 }
 
-void set_passenger_name(Passenger* person, char* name) {
-	strcpy(person->name, name);
+void person_destructor(Person* person) {
+	free(person->_private);
 }
 
-void set_passenger_balance(Passenger* person, int balance) {
-	person->balance = balance;
+Person* person_new(void) {
+	Person* person = (Person*)malloc(sizeof(Person));
+	person_constructor(person);
+	return person;
 }
 
-const char* get_passenger_name(Passenger person) {
-	return person.name;
+void person_delete(Person* person) {
+	person_destructor(person);
+	free(person);
 }
 
-int get_passenger_balance(Passenger person) {
-	return person.balance;
+void set_person_name(Person* person, char* name) {
+	strcpy(person->_private->name, name);
 }
 
-void input_passenger_name(Passenger* person) {
-	char temp[20];
-	printf("** Ввод имени пассажира **\n");
-	do {
-		printf("Введите имя: ");
-		gets_s(temp);
-	} while (temp[0] == NULL);
-	strcpy(person->name, temp);
-	printf("Данные успешно введены!\n\n");
+const char* get_person_name(Person* person) {
+	return person->_private->name;
 }
 
-void input_passenger_balance(Passenger* person) {
-	int temp = 0;
-	printf("** Ввод баланса пассажира **\n");
-	do {
-		printf("Введите баланс: ");
-		while (scanf("%d", &temp) != 1) {
-			while (getchar() != '\n');
-			printf("Ошибка. Введите баланс: ");
-		}
-	} while (temp < 0);
-	person->balance = temp;
-	printf("Данные успешно введены!\n\n");
+void set_person_balance(Person* person, int balance) {
+	person->_private->balance = balance;
 }
 
-void input_passenger(Passenger* person) {
+int get_person_balance(Person* person) {
+	return person->_private->balance;
+}
+
+void input_person(Person* person) {
 	char temp_char[20]; int temp_int = 0;
-	printf("** Ввод данных пассажира **\n");
+	printf("** Ввод данных человека **\n");
 	do {
 		printf("Введите имя: ");
 		gets_s(temp_char);
 	} while (temp_char[0] == NULL);
-	strcpy(person->name, temp_char);
+	strcpy(person->_private->name, temp_char);
 	do {
 		printf("Введите баланс: ");
 		while (scanf("%d", &temp_int) != 1) {
@@ -121,16 +124,102 @@ void input_passenger(Passenger* person) {
 			printf("Ошибка. Введите баланс: ");
 		}
 	} while (temp_int < 0);
-	person->balance = temp_int;
+	person->_private->balance = temp_int;
 	printf("Данные успешно введены!\n\n");
 }
 
-void output_passenger(Passenger person) {
-	if (person.name[0] == NULL || person.balance < 0)
-		printf("Данные о пассажире отсутствуют!");
+void output_person(Person* person) {
+	if (person->_private->name[0] == NULL)
+		printf("Данные о человеке отсутствуют!");
 	else
-		printf("Данные о пассажире:\n-Имя: %s\n-Баланс: %d\n\n", person.name, person.balance);
+		printf("Данные о человеке:\n-Имя: %s\n-Баланс: %d\n", person->_private->name, person->_private->balance);
 }
+
+/* -------------------------------- Пассажир ------------------------------------ */
+
+//Passenger passenger_new(void);
+//void set_passenger_name(Passenger* person, char* name);
+//void set_passenger_balance(Passenger* person, int balance);
+//const char* get_passenger_name(Passenger person);
+//int get_passenger_balance(Passenger person);
+//void input_passenger_name(Passenger* person);
+//void input_passenger_balance(Passenger* person);
+//void input_passenger(Passenger* person);
+//void output_passenger(Passenger person);
+//
+//Passenger passenger_new(void) {
+//	Passenger passenger;
+//	strcpy(passenger.name, "");
+//	passenger.balance = 0;
+//	return passenger;
+//}
+//
+//void set_passenger_name(Passenger* person, char* name) {
+//	strcpy(person->name, name);
+//}
+//
+//void set_passenger_balance(Passenger* person, int balance) {
+//	person->balance = balance;
+//}
+//
+//const char* get_passenger_name(Passenger person) {
+//	return person.name;
+//}
+//
+//int get_passenger_balance(Passenger person) {
+//	return person.balance;
+//}
+//
+//void input_passenger_name(Passenger* person) {
+//	char temp[20];
+//	printf("** Ввод имени пассажира **\n");
+//	do {
+//		printf("Введите имя: ");
+//		gets_s(temp);
+//	} while (temp[0] == NULL);
+//	strcpy(person->name, temp);
+//	printf("Данные успешно введены!\n\n");
+//}
+//
+//void input_passenger_balance(Passenger* person) {
+//	int temp = 0;
+//	printf("** Ввод баланса пассажира **\n");
+//	do {
+//		printf("Введите баланс: ");
+//		while (scanf("%d", &temp) != 1) {
+//			while (getchar() != '\n');
+//			printf("Ошибка. Введите баланс: ");
+//		}
+//	} while (temp < 0);
+//	person->balance = temp;
+//	printf("Данные успешно введены!\n\n");
+//}
+//
+//void input_passenger(Passenger* person) {
+//	char temp_char[20]; int temp_int = 0;
+//	printf("** Ввод данных пассажира **\n");
+//	do {
+//		printf("Введите имя: ");
+//		gets_s(temp_char);
+//	} while (temp_char[0] == NULL);
+//	strcpy(person->name, temp_char);
+//	do {
+//		printf("Введите баланс: ");
+//		while (scanf("%d", &temp_int) != 1) {
+//			while (getchar() != '\n');
+//			printf("Ошибка. Введите баланс: ");
+//		}
+//	} while (temp_int < 0);
+//	person->balance = temp_int;
+//	printf("Данные успешно введены!\n\n");
+//}
+//
+//void output_passenger(Passenger person) {
+//	if (person.name[0] == NULL || person.balance < 0)
+//		printf("Данные о пассажире отсутствуют!");
+//	else
+//		printf("Данные о пассажире:\n-Имя: %s\n-Баланс: %d\n\n", person.name, person.balance);
+//}
 
 /* -------------------------------- Топливный бак ------------------------------------ */
 
