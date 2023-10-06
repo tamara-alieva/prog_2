@@ -137,89 +137,56 @@ void output_person(Person* person) {
 
 /* -------------------------------- Пассажир ------------------------------------ */
 
-//Passenger passenger_new(void);
-//void set_passenger_name(Passenger* person, char* name);
-//void set_passenger_balance(Passenger* person, int balance);
-//const char* get_passenger_name(Passenger person);
-//int get_passenger_balance(Passenger person);
-//void input_passenger_name(Passenger* person);
-//void input_passenger_balance(Passenger* person);
-//void input_passenger(Passenger* person);
-//void output_passenger(Passenger person);
-//
-//Passenger passenger_new(void) {
-//	Passenger passenger;
-//	strcpy(passenger.name, "");
-//	passenger.balance = 0;
-//	return passenger;
-//}
-//
-//void set_passenger_name(Passenger* person, char* name) {
-//	strcpy(person->name, name);
-//}
-//
-//void set_passenger_balance(Passenger* person, int balance) {
-//	person->balance = balance;
-//}
-//
-//const char* get_passenger_name(Passenger person) {
-//	return person.name;
-//}
-//
-//int get_passenger_balance(Passenger person) {
-//	return person.balance;
-//}
-//
-//void input_passenger_name(Passenger* person) {
-//	char temp[20];
-//	printf("** Ввод имени пассажира **\n");
-//	do {
-//		printf("Введите имя: ");
-//		gets_s(temp);
-//	} while (temp[0] == NULL);
-//	strcpy(person->name, temp);
-//	printf("Данные успешно введены!\n\n");
-//}
-//
-//void input_passenger_balance(Passenger* person) {
-//	int temp = 0;
-//	printf("** Ввод баланса пассажира **\n");
-//	do {
-//		printf("Введите баланс: ");
-//		while (scanf("%d", &temp) != 1) {
-//			while (getchar() != '\n');
-//			printf("Ошибка. Введите баланс: ");
-//		}
-//	} while (temp < 0);
-//	person->balance = temp;
-//	printf("Данные успешно введены!\n\n");
-//}
-//
-//void input_passenger(Passenger* person) {
-//	char temp_char[20]; int temp_int = 0;
-//	printf("** Ввод данных пассажира **\n");
-//	do {
-//		printf("Введите имя: ");
-//		gets_s(temp_char);
-//	} while (temp_char[0] == NULL);
-//	strcpy(person->name, temp_char);
-//	do {
-//		printf("Введите баланс: ");
-//		while (scanf("%d", &temp_int) != 1) {
-//			while (getchar() != '\n');
-//			printf("Ошибка. Введите баланс: ");
-//		}
-//	} while (temp_int < 0);
-//	person->balance = temp_int;
-//	printf("Данные успешно введены!\n\n");
-//}
-//
-//void output_passenger(Passenger person) {
-//	if (person.name[0] == NULL || person.balance < 0)
-//		printf("Данные о пассажире отсутствуют!");
-//	else
-//		printf("Данные о пассажире:\n-Имя: %s\n-Баланс: %d\n\n", person.name, person.balance);
-//}
+void passenger_constructor(Passenger* passenger, Person* person) {
+	person_constructor(person);
+	passenger->_private = (PassengerPrivate*)malloc(sizeof(PassengerPrivate));
+	passenger->_private->payment_method = 0;
+}
+
+void passenger_destructor(Passenger* passenger) {
+	free(passenger->_private);
+}
+
+Passenger* passenger_new(Person* person) {
+	Passenger* passenger = (Passenger*)malloc(sizeof(Passenger));
+	passenger_constructor(passenger, person);
+	return passenger;
+}
+
+void passenger_delete(Passenger* passenger) {
+	passenger_destructor(passenger);
+	free(passenger);
+}
+
+void set_passenger_method(Passenger* passenger, bool method) {
+	passenger->_private->payment_method = method;
+}
+
+bool get_passenger_method(Passenger* passenger) {
+	return passenger->_private->payment_method;
+}
+
+void input_passenger(Passenger* passenger) {
+	int temp = 1;
+	printf("** Ввод данных о пассажире **\n");
+	do {
+		printf("Введите способ оплаты (0 - Наличные, 1 - Банковская карта): ");
+		while (scanf("%d", &temp) != 1) {
+			while (getchar() != '\n');
+			printf("Ошибка. Введите способ оплаты: ");
+		}
+	} while (temp != 0 && temp != 1);
+	passenger->_private->payment_method = temp;
+	printf("Данные успешно введены!\n\n");
+}
+
+void output_passenger(Passenger* passenger) {
+	printf("Данные о пассажире:\n-Способ оплаты: ");
+	if (passenger->_private->payment_method)
+		printf("Банксовская карта\n\n");
+	else
+		printf("Наличные\n\n");
+}
 
 /* -------------------------------- Топливный бак ------------------------------------ */
 
