@@ -568,7 +568,7 @@ int main() {
 	printf("--- Тест output_driver (вывести данные о водителе):\n");
 	output_driver(&driver_static);
 
-	printf("\n---------------------- Топливный бак -----------------------\n\n");
+	printf("---------------------- Топливный бак -----------------------\n\n");
 	Fuel* fuel_dynamic = fuel_new();
 	Fuel fuel_static = *fuel_dynamic;
 	set_fuel_capacity(fuel_dynamic, 1);
@@ -598,7 +598,7 @@ int main() {
 	printf("--- Тест output_car (вывести данные об автомобиле):\n");
 	output_car(&car_static);
 	fill_fuel((Fuel*)car_dynamic);
-	printf("--- Тест fill_fuel (заполнить бак, через дочерний объект Car): заполненность = %d\n", get_fuel_capacity((Fuel*)car_dynamic));
+	printf("--- Тест fill_fuel (заполнить бак, через дочерний объект Car): заполненность = %d\n\n", get_fuel_capacity((Fuel*)car_dynamic));
 
 	printf("---------------------- Заказ -------------------------------\n");
 	int rate = 0; // Класс поездки - Эконом
