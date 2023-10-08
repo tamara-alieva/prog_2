@@ -23,7 +23,7 @@ typedef struct _Passenger {
 	PassengerPrivate* _private;
 } Passenger;
 
-typedef struct _Driver {
+typedef struct _DriverPrivate {
 	int experience, orderAmount;
 } DriverPrivate;
 
@@ -519,17 +519,39 @@ void order(bool rate, bool congestion, Passenger* passenger, Driver* driver, Car
 		output_passenger(passenger);
 		output_driver(driver);
 		output_car(car);
-
-		printf("\n\n");
 	}
+
+	printf("\n\n");
 }
 
 int main() {
 	setlocale(LC_ALL, "Russian");
 	SetConsoleCP(1251);
 	SetConsoleOutputCP(1251);
+	char buffer[20];
 
 	printf("ТЕСТЫ:\n");
+	printf("---------------------- Человек -----------------------------\n\n");
+	Person* person_dynamic_1 = person_new(); // Человек 1 (пассажир)
+	Person person_static_1 = *person_dynamic_1;
+	Person* person_dynamic_2 = person_new(); // Человек 2 (водитель)
+	strcpy(buffer, "Иван");
+	set_person_name(&person_static_1, buffer);
+	printf("--- Тест set_person_name (установлено значение \"Иван\") и get_person_name: имя - %s\n", get_person_name(person_dynamic_1));
+	set_person_balance(person_dynamic_1, 200);
+	printf("--- Тест set_person_balance (установлено значение 200) и get_person_balance: баланс = %d\n", get_person_balance(&person_static_1));
+	printf("--- Тест input_person (ввести данные о человеке):\n");
+	input_person(person_dynamic_2);
+	printf("--- Тест output_person (вывести данные о человеке):\n");
+	output_person(person_dynamic_2);
+	printf("\n\n");
+
+	printf("---------------------- Пассажир ----------------------------\n\n");
+	
+
+	//printf("---------------------- Водитель ----------------------------\n\n");
+
+
 	printf("---------------------- Топливный бак -----------------------\n\n");
 	Fuel* fuel_dynamic = fuel_new();
 	Fuel fuel_static = *fuel_dynamic;
@@ -542,16 +564,15 @@ int main() {
 	empty_fuel(&fuel_static);
 	printf("--- Тест empty_fuel (опустошить бак): заполненность = %d\n", get_fuel_capacity(&fuel_static));
 	fill_fuel(fuel_dynamic);
-	printf("--- Тест fill_fuel (заполнить бак): заполненность = %d\n", get_fuel_capacity(fuel_dynamic));
+	printf("--- Тест fill_fuel (заполнить бак): заполненность = %d\n\n", get_fuel_capacity(fuel_dynamic));
 	fuel_delete(fuel_dynamic);
 
-	printf("\n---------------------- Автомобиль --------------------------\n\n");
+	printf("---------------------- Автомобиль --------------------------\n\n");
 	Car car_static;
 	Car* car_dynamic = car_new();
 	car_static = *car_dynamic;
-	char brand[20];
-	strcpy(brand, "Volvo");
-	set_car_brand(car_dynamic, brand);
+	strcpy(buffer, "Volvo");
+	set_car_brand(car_dynamic, buffer);
 	printf("--- Тест set_car_brand (установлено значение \"Volvo\") и get_car_brand: марка - %s\n", get_car_brand(car_dynamic));
 	set_car_rate(car_dynamic, 1);
 	printf("--- Тест set_car_rate (установлено значение 1 - Комфорт) и get_car_rate: класс автомобиля - %d\n", get_car_rate(car_dynamic));
