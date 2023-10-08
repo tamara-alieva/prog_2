@@ -270,10 +270,10 @@ void input_driver(Driver* driver) {
 }
 
 void output_driver(Driver* driver) {
-	printf("Данные о пассажире:\n-Имя: %s\n", get_person_name((Person*)driver));
+	printf("Данные о водителе:\n-Имя: %s\n", get_person_name((Person*)driver));
 	printf("-Баланс: %d\n", get_person_balance((Person*)driver));
 	printf("-Количество лет опыта: %d\n", driver->_private->experience);
-	printf("-Количество выполненных заказов: %d\n", driver->_private->orderAmount);
+	printf("-Количество выполненных заказов: %d\n\n", driver->_private->orderAmount);
 }
 
 void give_payment(Driver* driver, int payment) {
@@ -473,7 +473,7 @@ void output_car(Car* car) {
 void order(bool rate, bool congestion, Passenger* passenger, Driver* driver, Car* car);
 
 void order(bool rate, bool congestion, Passenger* passenger, Driver* driver, Car* car) {
-	printf("\n\nЗАКАЗ\n");
+	printf("ЗАКАЗ\n");
 	int payment;
 	int status = 0;
 	if (rate) payment = 500; // Класс поездки - Комфорт
@@ -488,10 +488,10 @@ void order(bool rate, bool congestion, Passenger* passenger, Driver* driver, Car
 			printf("У выбранной машины не заполнен топливный бак!\n");
 		else {
 			if (rate) { // Класс поездки - Комфорт
-				if ((int)get_driver_experience < 10 || (int)get_driver_order_amount < 30)
-					printf("У выбранного водителя недостаточно лет опыта или выполненных заказов для выполнения заказа уровня Комфорт!\n");
+				if (get_driver_experience(driver) < 10 || get_driver_order_amount(driver) < 30)
+					printf("У выбранного водителя недостаточно лет опыта или завершённых заказов для выполнения заказа уровня Комфорт!\n");
 				else {
-					if (get_car_rate == 0)
+					if (get_car_rate(car) == 0)
 						printf("Выбранный автомобиль недостаточно высокого класса для выполнения заказа уровня Комфорт!\n");
 					else
 						status = 1;
@@ -516,12 +516,13 @@ void order(bool rate, bool congestion, Passenger* passenger, Driver* driver, Car
 		if (congestion) printf("Есть\n");
 		else printf("Нет\n");
 
+		printf("Стоимость поездки: %d\n\n", payment);
+
 		output_passenger(passenger);
 		output_driver(driver);
 		output_car(car);
 	}
-
-	printf("\n\n");
+	printf("\n");
 }
 
 int main() {
@@ -585,11 +586,11 @@ int main() {
 	Car car_static;
 	Car* car_dynamic = car_new();
 	car_static = *car_dynamic;
-	strcpy(buffer, "Volvo");
+	strcpy(buffer, "Toyota");
 	set_car_brand(car_dynamic, buffer);
-	printf("--- Тест set_car_brand (установлено значение \"Volvo\") и get_car_brand: марка - %s\n", get_car_brand(car_dynamic));
-	set_car_rate(car_dynamic, 1);
-	printf("--- Тест set_car_rate (установлено значение 1 - Комфорт) и get_car_rate: класс автомобиля - %d\n", get_car_rate(car_dynamic));
+	printf("--- Тест set_car_brand (установлено значение \"Toyota\") и get_car_brand: марка - %s\n", get_car_brand(car_dynamic));
+	set_car_rate(car_dynamic, 0);
+	printf("--- Тест set_car_rate (установлено значение 0 - Эконом) и get_car_rate: класс автомобиля - %d\n", get_car_rate(car_dynamic));
 	printf("--- Тест input_car_brand (ввести марку):\n");
 	input_car_brand(car_dynamic);
 	printf("--- Тест input_car_rate (ввести класс автомобиля):\n");
@@ -599,9 +600,45 @@ int main() {
 	fill_fuel((Fuel*)car_dynamic);
 	printf("--- Тест fill_fuel (заполнить бак, через дочерний объект Car): заполненность = %d\n", get_fuel_capacity((Fuel*)car_dynamic));
 
+	printf("---------------------- Заказ -------------------------------\n");
+	int rate = 0; // Класс поездки - Эконом
+	int congestion = 0; // Загруженность дорог - нет
+
+	printf("--- Тест 1 (Эконом): заказ успешно выполняется\n");
+	order(rate, congestion, passenger_dynamic, &driver_static, car_dynamic);
+
+	printf("--- Тест 2 (Эконом): на балансе пассажира недостаточно средств\n");
+	set_person_balance((Person*)passenger_dynamic, 100);
+	order(rate, congestion, passenger_dynamic, &driver_static, car_dynamic);
+
+	printf("--- Тест 3 (Эконом): топливный бак автомобиля не заполнен\n");
+	set_person_balance((Person*)passenger_dynamic, 300);
+	order(rate, congestion, passenger_dynamic, &driver_static, car_dynamic);
+
+	printf("--- Тест 4 (Комфорт): у водителя недостаточно лет опыта вождения\n");
+	rate = 1;
+	congestion = 1;
+	fill_fuel((Fuel*)car_dynamic);
+	set_person_balance((Person*)passenger_dynamic, 1500);
+	order(rate, congestion, passenger_dynamic, &driver_static, car_dynamic);
+
+	printf("--- Тест 5 (Комфорт): у водителя недостаточно выполненных заказов\n");
+	set_driver_experience(driver_dynamic, 17);
+	order(rate, congestion, passenger_dynamic, &driver_static, car_dynamic);
+
+	printf("--- Тест 6 (Комфорт): автомобиль недостаточно высокого класса\n");
+	set_driver_order_amount(driver_dynamic, 50);
+	order(rate, congestion, passenger_dynamic, &driver_static, car_dynamic);
+
+	printf("--- Тест 7 (Комфорт): заказ успешно выполняется\n");
+	strcpy(buffer, "Volvo");
+	set_car_brand(car_dynamic, buffer);
+	set_car_rate(car_dynamic, 1);
+	order(rate, congestion, passenger_dynamic, driver_dynamic, car_dynamic);
+
 	passenger_delete(passenger_dynamic);
 	person_delete(person_dynamic_1);
-
+	driver_delete(driver_dynamic);
 	person_delete(person_dynamic_2);
 	fuel_delete(fuel_dynamic);
 	car_delete(car_dynamic);
