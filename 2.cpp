@@ -139,7 +139,7 @@ void output_passenger(Passenger* passenger);
 void take_payment(Passenger* passenger, int payment);
 
 void passenger_constructor(Passenger* passenger, Person* person) {
-	person_constructor(person);
+	passenger->person = *person;
 	passenger->_private = (PassengerPrivate*)malloc(sizeof(PassengerPrivate));
 	passenger->_private->payment_method = 0;
 }
@@ -210,7 +210,7 @@ void output_driver(Driver* driver);
 void give_payment(Driver* driver, int payment);
 
 void driver_constructor(Driver* driver, Person* person) {
-	person_constructor(person);
+	driver->person = *person;
 	driver->_private = (DriverPrivate*)malloc(sizeof(DriverPrivate));
 	driver->_private->experience = 0;
 	driver->_private->orderAmount = 0;
@@ -544,15 +544,30 @@ int main() {
 	input_person(person_dynamic_2);
 	printf("--- Тест output_person (вывести данные о человеке):\n");
 	output_person(person_dynamic_2);
-	printf("\n\n");
 
-	printf("---------------------- Пассажир ----------------------------\n\n");
-	
+	printf("\n---------------------- Пассажир ----------------------------\n\n");
+	Passenger* passenger_dynamic = passenger_new(&person_static_1);
+	Passenger passenger_static = *passenger_dynamic;
+	set_passenger_method(&passenger_static, 1);
+	printf("--- Тест set_passenger_method (установлено значение 1 - Банковская карта) и get_passenger_method: способ оплаты - %d\n", get_passenger_method(passenger_dynamic));
+	printf("--- Тест input_passenger (ввести данные о пассажире):\n");
+	input_passenger(passenger_dynamic);
+	printf("--- Тест output_passenger (вывести данные о пассажире):\n");
+	output_passenger(&passenger_static);
 
-	//printf("---------------------- Водитель ----------------------------\n\n");
+	printf("---------------------- Водитель ----------------------------\n\n");
+	Driver* driver_dynamic = driver_new(person_dynamic_2);
+	Driver driver_static = *driver_dynamic;
+	set_driver_experience(&driver_static, 5);
+	printf("--- Тест set_driver_experience (установлено значение 5) и get_driver_experience: опыт вождения (лет) = %d\n", get_driver_experience(&driver_static));
+	set_driver_order_amount(driver_dynamic, 15);
+	printf("--- Тест set_driver_order_amount (установлено значение 15) и get_driver_order_amount: кол-во выполненных заказов = %d\n", get_driver_order_amount(driver_dynamic));
+	printf("--- Тест input_driver (ввести данные о водителе):\n");
+	input_driver(driver_dynamic);
+	printf("--- Тест output_driver (вывести данные о водителе):\n");
+	output_driver(&driver_static);
 
-
-	printf("---------------------- Топливный бак -----------------------\n\n");
+	printf("\n---------------------- Топливный бак -----------------------\n\n");
 	Fuel* fuel_dynamic = fuel_new();
 	Fuel fuel_static = *fuel_dynamic;
 	set_fuel_capacity(fuel_dynamic, 1);
@@ -565,7 +580,6 @@ int main() {
 	printf("--- Тест empty_fuel (опустошить бак): заполненность = %d\n", get_fuel_capacity(&fuel_static));
 	fill_fuel(fuel_dynamic);
 	printf("--- Тест fill_fuel (заполнить бак): заполненность = %d\n\n", get_fuel_capacity(fuel_dynamic));
-	fuel_delete(fuel_dynamic);
 
 	printf("---------------------- Автомобиль --------------------------\n\n");
 	Car car_static;
@@ -584,6 +598,12 @@ int main() {
 	output_car(&car_static);
 	fill_fuel((Fuel*)car_dynamic);
 	printf("--- Тест fill_fuel (заполнить бак, через дочерний объект Car): заполненность = %d\n", get_fuel_capacity((Fuel*)car_dynamic));
+
+	passenger_delete(passenger_dynamic);
+	person_delete(person_dynamic_1);
+
+	person_delete(person_dynamic_2);
+	fuel_delete(fuel_dynamic);
 	car_delete(car_dynamic);
 
 	return 0;
