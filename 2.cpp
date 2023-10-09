@@ -194,3 +194,44 @@ public:
 		this->setOrderAmount(old_amount + 1);
 	}
 };
+
+class Fuel {
+private:
+	bool capacity;
+public:
+	Fuel() {
+		this->capacity = 0;
+	}
+	Fuel(bool capacity) {
+		this->capacity = capacity;
+	}
+	void setCapacity(bool capacity) {
+		this->capacity;
+	}
+	bool getCapacity() {
+		return this->capacity;
+	}
+	void input() {
+		string temp;
+		cout << "** Ввод данных о топливном баке **" << endl;
+		do {
+			cout << "Введите заполенность бака (0 - Пустой, 1 - Полный): ";
+			cin >> temp;
+		} while (temp != "0" && temp != "1");
+		this->capacity = stoi(temp);
+		cout << "Данные успешно введены!" << endl << endl;
+	}
+	void output() {
+		cout << "Данные о топливном баке:" << endl << "-Заполненность: ";
+		if (this->getCapacity())
+			cout << "Полный" << endl << endl;
+		else
+			cout << "Пустой" << endl << endl;
+	}
+	void fill() {
+		this->capacity = 1;
+	}
+	void empty() {
+		this->capacity = 0;
+	}
+};
