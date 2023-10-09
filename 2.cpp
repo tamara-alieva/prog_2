@@ -7,6 +7,10 @@
 
 using namespace std;
 
+bool nameCheck(string name);
+bool intCheck(string balance);
+void order(bool rate, bool congestion, Passenger passenger, Driver driver, Car car);
+
 bool nameCheck(string name) {
 	int i = 0; bool f = 1;
 	for (i = 0; i < name.length(); i++) {
@@ -238,10 +242,10 @@ public:
 
 class Car {
 private:
-	Fuel fuel;
 	string brand;
 	bool rate;
 public:
+	Fuel fuel;
 	Car() {
 		this->fuel = new Fuel();
 		this->brand = "";
@@ -300,3 +304,55 @@ public:
 		}
 	}
 };
+
+void order(bool rate, bool congestion, Passenger* passenger, Driver* driver, Car* car) {
+	cout << "ЗАКАЗ" << endl;
+	int payment;
+	int status = 0;
+	if (rate) payment = 500; // Класс поездки - Комфорт
+	else payment = 200; // Класс поездки - Эконом
+
+	if (congestion) payment *= 2; // Если дороги загруженны
+
+	if (passenger->getBalance() < payment)
+		cout << "На балансе пассажира недостаточно средств! (Сумма поездки: " << payment << ")" << endl;
+	else {
+		if (car->fuel.getCapacity() == 0)
+			cout << "У выбранной машины не заполнен топливный бак!" << endl;
+		else {
+			if (rate) { // Класс поездки - Комфорт
+				if (driver->getExperience() < 10 || driver->getOrderAmount() < 30)
+					cout << "У выбранного водителя недостаточно лет опыта или завершённых заказов для выполнения заказа уровня Комфорт!" << endl;
+				else {
+					if (car->getRate() == 0)
+						cout << "Выбранный автомобиль недостаточно высокого класса для выполнения заказа уровня Комфорт!" << endl;
+					else
+						status = 1;
+				}
+			}
+			else // Класс поездки - Эконом
+				status = 1;
+		}
+	}
+
+	if (status) {
+		passenger->takePayment(payment);
+		driver->givePayment(payment);
+		driver->increaseOrderAmount();
+		car->fuel.empty();
+
+		cout << "Заказ выполнен успешно! Информация на момент завершения заказа:" << endl << endl << "Класс поездки: ";
+		if (rate) cout << "Комфорт" << endl;
+		else cout << "Эконом" << endl;
+
+		cout << "Загруженность дорог: ";
+		if (congestion) cout << "Есть" << endl;
+		else cout << "Нет" << endl;
+
+		cout << "Стоимость поездки: " << payment << endl << endl;
+		passenger->output();
+		driver->output();
+		car->output();
+	}
+	cout << endl;
+}
