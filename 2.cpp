@@ -52,6 +52,12 @@ public:
 		this->name = name;
 		this->balance = balance;
 	}
+	void setName(string name) {
+		this->name = name;
+	}
+	void setBalance(int balance) {
+		this->balance = balance;
+	}
 	string getName() {
 		return this->name;
 	}
@@ -77,5 +83,51 @@ public:
 			cout << "Данные о человеке отсутствуют!" << endl;
 		else
 			cout << "Данные о человеке:" << endl << "-Имя: " << this->name << endl << "-Баланс: " << this->balance << endl;
+	}
+};
+
+class Passenger : public Person {
+private:
+	bool payment_method;
+public:
+	Passenger() : Person() {
+		this->payment_method = 0;
+	}
+	Passenger(string name) : Person(name) {
+		this->payment_method = 0;
+	}
+	Passenger(int balance) : Person(balance) {
+		this->payment_method = 0;
+	}
+	Passenger(string name, int balance, bool method) : Person(name, balance) {
+		this->payment_method = method;
+	}
+	void setMethod(bool method) {
+		this->payment_method = method;
+	}
+	bool getMethod() {
+		return this->payment_method;
+	}
+	void input() {
+		string temp;
+		cout << "** Ввод данных о пассажире %s **" << this->getName() << endl;
+		do {
+			cout << "Введите способ оплаты (0 - Наличные, 1 - Банковская карта): ";
+			cin >> temp;
+		} while (temp != "0" && temp != "1");
+		this->payment_method = stoi(temp);
+		cout << "Данные успешно введены!" << endl << endl;
+	}
+	void output() {
+		cout << "Данные о пассажире:" << endl << "-Имя: " << this->getName() << endl;
+		cout << "-Баланс: " << this->getBalance() << endl << "-Способ оплаты: ";
+		if (this->getMethod())
+			cout << "Банковская карта" << endl << endl;
+		else
+			cout << "Наличные" << endl << endl;
+	}
+	void takePayment(int payment) {
+		int old_balance = this->getBalance();
+		this->setBalance(old_balance - payment);
 	}
 };
