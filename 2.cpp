@@ -9,7 +9,6 @@ using namespace std;
 
 bool nameCheck(string name);
 bool intCheck(string balance);
-void order(bool rate, bool congestion, Passenger passenger, Driver driver, Car car);
 
 bool nameCheck(string name) {
 	int i = 0; bool f = 1;
@@ -114,7 +113,7 @@ public:
 	}
 	void input() {
 		string temp;
-		cout << "** Ввод данных о пассажире %s **" << this->getName() << endl;
+		cout << "** Ввод данных о пассажире: " << this->getName() << " **" << endl;
 		do {
 			cout << "Введите способ оплаты (0 - Наличные, 1 - Банковская карта): ";
 			cin >> temp;
@@ -170,7 +169,7 @@ public:
 	}
 	void input() {
 		string temp;
-		cout << "** Ввод данных водителя **" << this->getName() << endl;
+		cout << "** Ввод данных водителя: " << this->getName() << " **" << endl;
 		do {
 			cout << "Введите количество лет опыта: ";
 			cin >> temp;
@@ -305,6 +304,8 @@ public:
 	}
 };
 
+void order(bool rate, bool congestion, Passenger* passenger, Driver* driver, Car* car);
+
 void order(bool rate, bool congestion, Passenger* passenger, Driver* driver, Car* car) {
 	cout << "ЗАКАЗ" << endl;
 	int payment;
@@ -355,4 +356,114 @@ void order(bool rate, bool congestion, Passenger* passenger, Driver* driver, Car
 		car->output();
 	}
 	cout << endl;
+}
+
+int main() {
+	setlocale(LC_ALL, "Russian");
+	SetConsoleCP(1251);
+	SetConsoleOutputCP(1251);
+
+	string buffer; int i;
+	cout << "ТЕСТЫ:" << endl;
+	cout << "---------------------- Человек -----------------------------" << endl << endl;
+	Person* person_array = new Person[2]; // Динамический массив объектов класса
+	buffer = "Иван";
+	person_array[0].setName(buffer);
+	cout << "--- Тест setName (установлено значение \"Иван\") и getName: имя - " << person_array[0].getName() << endl;
+	person_array[0].setBalance(500);
+	cout << "--- Тест setBalance (установлено значение 500) и getBbalance: баланс = " << person_array[0].getBalance() << endl;
+	cout << "--- Тест input (ввести данные):" << endl;
+	person_array[1].input();
+	cout << "--- Тест output (вывести данные):" << endl;
+	person_array[1].output();
+
+	cout << endl << "---------------------- Пассажир ----------------------------" << endl << endl;
+	Passenger* passenger_dynamic = new Passenger(buffer, 200, true);
+	Passenger passenger_static = *passenger_dynamic;
+	cout << "--- Тест getMethod (установлено значение 1 - Банковская карта): способ оплаты - " << passenger_dynamic->getMethod() << endl;
+	cout << "--- Тест input (ввести данные):" << endl;
+	passenger_static.input();
+	cout << "--- Тест output (вывести данные):" << endl;
+	passenger_static.output();
+
+	cout << "---------------------- Водитель ----------------------------" << endl << endl;
+	Driver* driver = new Driver(person_array[1].getName());
+	driver->setBalance(4000);
+	driver->setExperience(5);
+	cout << "--- Тест setExperience (установлено значение 5) и getExperience: опыт вождения (лет) = " << driver->getExperience() << endl;
+	driver->setOrderAmount(15);
+	cout << "--- Тест setOrderAmount (установлено значение 15) и geOrderAmount: кол-во выполненных заказов = " << driver->getOrderAmount() << endl;
+	cout << "--- Тест input (ввести данные):" << endl;
+	driver->input();
+	cout << "--- Тест output (вывести данные):" << endl;
+	driver->output();
+
+	delete[] person_array;
+
+	cout << "---------------------- Топливный бак -----------------------" << endl << endl;
+	Fuel fuel = new Fuel;
+	fuel.setCapacity(true);
+	cout << "--- Тест setCapacity (установлено значение 1 - Полный) и getCapacity: заполненность = " << fuel.getCapacity() << endl;
+	cout << "--- Тест input_fuel (ввести данные):" << endl;
+	fuel.input();
+	cout << "--- Тест output_fuel (вывести данные):" << endl;
+	fuel.output();
+	fuel.empty();
+	cout << "--- Тест empty (опустошить бак): заполненность = " << fuel.getCapacity() << endl;
+	fuel.fill();
+	cout << "--- Тест fill (заполнить бак): заполненность = " << fuel.getCapacity() << endl << endl;
+
+	cout << "---------------------- Автомобиль --------------------------" << endl << endl;
+	buffer = "Toyota";
+	Car* car_array[3]{ new Car, new Car, new Car};
+	car_array[1]->setBrand(buffer);
+	cout << "--- Тест setBrand (установлено значение \"Toyota\") и getBrand: " << car_array[1]->getBrand() << endl;;
+	car_array[1]->setRate(false);
+	car_array[2]->setRate(true);
+	cout << "--- Тест setRate (установлено значение 0 - Эконом) и getRate: класс автомобиля - " << car_array[1]->getRate() << endl;
+	cout << "--- Тест input (ввести данные):" << endl;
+	car_array[0]->input();
+	cout << "--- Тест output_car (вывести данные об автомобиле):" << endl;
+	car_array[0]->output();
+	car_array[1]->fuel.fill();
+	cout << "--- Тест fill (заполнить бак, через дочерний объект Fuel): заполненность = " << car_array[1]->fuel.getCapacity() << endl << endl;
+
+	cout << "---------------------- Заказ -------------------------------" << endl;
+	int rate = 0; // Класс поездки - Эконом
+	int congestion = 0; // Загруженность дорог - нет
+
+	cout << "--- Тест 1 (Эконом): заказ успешно выполняется" << endl;
+	order(rate, congestion, passenger_dynamic, driver, car_array[1]);
+
+	cout << "--- Тест 2 (Эконом): на балансе пассажира недостаточно средств" << endl;
+	passenger_dynamic->setBalance(100);
+	order(rate, congestion, passenger_dynamic, driver, car_array[1]);
+
+	cout << "--- Тест 3 (Эконом): топливный бак автомобиля не заполнен" << endl;
+	passenger_dynamic->setBalance(300);
+	order(rate, congestion, passenger_dynamic, driver, car_array[1]);
+
+	cout << "--- Тест 4 (Комфорт): у водителя недостаточно лет опыта вождения" << endl;
+	rate = 1;
+	congestion = 1;
+	car_array[1]->fuel.fill();
+	passenger_dynamic->setBalance(1500);
+	order(rate, congestion, passenger_dynamic, driver, car_array[1]);
+
+	cout << "--- Тест 5 (Комфорт): у водителя недостаточно выполненных заказов" << endl;
+	driver->setExperience(17);
+	order(rate, congestion, passenger_dynamic, driver, car_array[1]);
+
+	cout << "--- Тест 6 (Комфорт): автомобиль недостаточно высокого класса" << endl;
+	driver->setOrderAmount(50);
+	order(rate, congestion, passenger_dynamic, driver, car_array[1]);
+
+	cout << "--- Тест 7 (Комфорт): заказ успешно выполняется" << endl;
+	car_array[0]->fuel.fill();
+	order(rate, congestion, passenger_dynamic, driver, car_array[0]);
+
+	for (i = 0; i < 3; i++)
+		delete car_array[i];
+
+	return 0;
 }
